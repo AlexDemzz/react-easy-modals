@@ -1,0 +1,1 @@
+{"version":3,"file":"context.d.ts","sourceRoot":"","sources":["../src/context.tsx"],"names":[],"mappings":"AACA,OAAO,EAAiB,SAAS,EAAc,MAAM,OAAO,CAAC;AAC7D,OAAO,EAAE,YAAY,EAAE,MAAM,SAAS,CAAC;AAKvC,wBAAgB,aAAa,CAAC,EAAE,QAAQ,EAAE,EAAE;IAAE,QAAQ,EAAE,SAAS,CAAA;CAAE,2CAQlE;AAED,wBAAgB,SAAS,iBAMxB"}
