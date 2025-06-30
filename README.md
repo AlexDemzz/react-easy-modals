@@ -1,6 +1,6 @@
 # React Easy Modals
 
-A React modal management library with easy-to-use hooks and components.
+A headless React modal management library with easy-to-use hooks, adapted from [svelte-modals](https://github.com/mattjennings/svelte-modals) for React applications.
 
 ## Installation
 
@@ -40,6 +40,49 @@ function YourComponent() {
   return (
     <button onClick={handleOpenModal}>
       Open Modal
+    </button>
+  );
+}
+```
+
+## Promise Example
+
+```tsx
+function ConfirmModal({ close, data }) {
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <h2>Confirm Action</h2>
+        <p>{data?.message || 'Are you sure?'}</p>
+        <div className="modal-actions">
+          <button onClick={() => close('confirmed')}>Confirm</button>
+          <button onClick={() => close('cancelled')}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MyComponent() {
+  const { open } = useModals();
+
+  const handleDelete = async () => {
+    const result = await open(ConfirmModal, {
+      message: 'Are you sure you want to delete this item?'
+    });
+
+    if (result === 'confirmed') {
+      // User confirmed, proceed with deletion
+      console.log('Deleting item...');
+    } else {
+      // User cancelled
+      console.log('Deletion cancelled');
+    }
+  };
+
+  return (
+    <button onClick={handleDelete}>
+      Delete Item
     </button>
   );
 }

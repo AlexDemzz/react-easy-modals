@@ -2,9 +2,7 @@ import { ComponentType } from "react";
 
 export interface ModalOptions {
   id?: string;
-  closeOnBackdropClick?: boolean;
-  closeOnEscape?: boolean;
-  preventClose?: boolean;
+  replace?: boolean;
 }
 
 export interface ModalProps<ReturnValue = any> extends Record<string, any> {
@@ -35,4 +33,7 @@ export interface ModalManager {
   closeById: (id: string) => void;
   closeAll: () => void;
   stack: ModalInstance[];
+  action: ModalAction;
 }
+
+export type ModalAction = "none" | "push" | "replace" | "pop";

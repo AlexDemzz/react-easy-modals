@@ -29,7 +29,7 @@
     "headless",
     "manager"
   ],
-  "author": "",
+  "author": "Alexandre Joly (https://alexandrejoly.me)",
   "license": "ISC",
   "packageManager": "pnpm@10.12.4",
   "peerDependencies": {

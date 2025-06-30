@@ -1,8 +1,14 @@
 import { useState, useCallback, useRef } from "react";
-import { ModalManager, ModalInstance, ModalOptions } from "./types";
+import {
+  ModalManager,
+  ModalInstance,
+  ModalOptions,
+  ModalAction,
+} from "./types";
 
 export function useModalManager(): ModalManager {
   const [stack, setStack] = useState<ModalInstance[]>([]);
+  const [action, setAction] = useState<ModalAction>("none");
   const nextId = useRef(0);
   const beforeCloseCallbacks = useRef<{
     [id: string]: () => boolean | Promise<boolean>;
@@ -58,7 +64,16 @@ export function useModalManager(): ModalManager {
         };
 
         setStack((prev) => {
-          const newStack = [...prev, modalInstance];
+          let newStack: ModalInstance[];
+
+          if (options?.replace && prev.length > 0) {
+            newStack = [...prev.slice(0, -1), modalInstance];
+            setAction("replace");
+          } else {
+            newStack = [...prev, modalInstance];
+            setAction("push");
+          }
+
           return updateModalStack(newStack);
         });
       });
@@ -76,6 +91,7 @@ export function useModalManager(): ModalManager {
             modal.close(undefined);
           }
         }
+        setAction("pop");
         return updateModalStack(newStack);
       });
     },
@@ -90,6 +106,7 @@ export function useModalManager(): ModalManager {
           modal.close(undefined);
         }
         const newStack = prev.filter((m) => m.id !== id);
+        setAction("pop");
         return updateModalStack(newStack);
       });
     },
@@ -99,6 +116,7 @@ export function useModalManager(): ModalManager {
   const closeAll = useCallback(() => {
     setStack((prev) => {
       prev.forEach((modal) => modal.close(undefined));
+      setAction("pop");
       return updateModalStack([]);
     });
   }, [updateModalStack]);
@@ -109,5 +127,6 @@ export function useModalManager(): ModalManager {
     closeById,
     closeAll,
     stack,
+    action,
   };
 }
