@@ -1,7 +1,7 @@
 {
   "name": "react-easy-modals",
-  "version": "1.0.0",
-  "description": "A headless modal manager for React inspired by svelte-modals",
+  "version": "1.0.2",
+  "description": "A simple, flexible, zero-dependency modal stack manager for React (port of svelte-modals).",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {

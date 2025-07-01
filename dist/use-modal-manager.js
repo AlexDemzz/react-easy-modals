@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 export function useModalManager() {
     const [stack, setStack] = useState([]);
+    const [action, setAction] = useState("none");
     const nextId = useRef(0);
     const beforeCloseCallbacks = useRef({});
     const generateId = useCallback(() => {
@@ -39,7 +40,15 @@ export function useModalManager() {
                 setBeforeClose,
             };
             setStack((prev) => {
-                const newStack = [...prev, modalInstance];
+                let newStack;
+                if (options?.replace && prev.length > 0) {
+                    newStack = [...prev.slice(0, -1), modalInstance];
+                    setAction("replace");
+                }
+                else {
+                    newStack = [...prev, modalInstance];
+                    setAction("push");
+                }
                 return updateModalStack(newStack);
             });
         });
@@ -53,6 +62,7 @@ export function useModalManager() {
                     modal.close(undefined);
                 }
             }
+            setAction("pop");
             return updateModalStack(newStack);
         });
     }, [updateModalStack]);
@@ -63,12 +73,14 @@ export function useModalManager() {
                 modal.close(undefined);
             }
             const newStack = prev.filter((m) => m.id !== id);
+            setAction("pop");
             return updateModalStack(newStack);
         });
     }, [updateModalStack]);
     const closeAll = useCallback(() => {
         setStack((prev) => {
             prev.forEach((modal) => modal.close(undefined));
+            setAction("pop");
             return updateModalStack([]);
         });
     }, [updateModalStack]);
@@ -78,5 +90,6 @@ export function useModalManager() {
         closeById,
         closeAll,
         stack,
+        action,
     };
 }
