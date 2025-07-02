@@ -2,6 +2,7 @@
 import { createContext, ReactNode, useContext, ReactElement } from "react";
 import { ModalManager } from "./types";
 import { useModalManager } from "./use-modal-manager";
+import { ModalItemProvider } from "./item-context";
 
 interface ModalProviderProps {
   children: ReactNode;
@@ -40,15 +41,15 @@ function Modals({ backdrop, loading }: ModalsProps) {
       {isLoading && loading && loading()}
       {stack.map((modal) => {
         return (
-          <modal.component
-            key={modal.id}
-            data={modal.data}
-            close={modal.close}
-            isOpen={modal.isOpen}
-            id={modal.id}
-            index={modal.index}
-            onBeforeClose={modal.onBeforeClose}
-          />
+          <ModalItemProvider key={modal.id} modal={modal}>
+            <modal.component
+              data={modal.data}
+              close={modal.close}
+              isOpen={modal.isOpen}
+              id={modal.id}
+              index={modal.index}
+            />
+          </ModalItemProvider>
         );
       })}
       {stack.length > 0 && backdrop && backdrop(modalManager)}
