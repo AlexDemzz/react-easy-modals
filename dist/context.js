@@ -2,6 +2,7 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { createContext, useContext } from "react";
 import { useModalManager } from "./use-modal-manager";
+import { ModalItemProvider } from "./item-context";
 const ModalContext = createContext(null);
 export function ModalProvider({ children, backdrop, loading, }) {
     const modalManager = useModalManager();
@@ -10,8 +11,8 @@ export function ModalProvider({ children, backdrop, loading, }) {
 function Modals({ backdrop, loading }) {
     const modalManager = useModals();
     const { stack, isLoading } = modalManager;
-    return (_jsxs(_Fragment, { children: [isLoading && loading && loading(), stack.map((modal, index) => {
-                return (_jsx(modal.component, { data: modal.data, close: (v) => modal.close(v), isOpen: modal.isOpen, id: modal.id, index: modal.index, onBeforeClose: modal.onBeforeClose }, `modal-${modal.id}-${index}`));
+    return (_jsxs(_Fragment, { children: [isLoading && loading && loading(), stack.map((modal) => {
+                return (_jsx(ModalItemProvider, { modal: modal, children: _jsx(modal.component, { data: modal.data, close: modal.close, isOpen: modal.isOpen, id: modal.id, index: modal.index }) }, modal.id));
             }), stack.length > 0 && backdrop && backdrop(modalManager)] }));
 }
 export function useModals() {

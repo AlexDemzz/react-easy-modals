@@ -1,8 +1,15 @@
-import { ComponentType } from "react";
+import { ComponentType, ReactElement, ReactNode } from "react";
 
 export interface ModalOptions {
   id?: string;
   replace?: boolean;
+}
+
+export interface ModalProviderProps {
+  children: ReactNode;
+  backdrop?: (modals: ModalManager) => ReactElement | null;
+  loading?: (modals: ModalManager) => ReactElement | null;
+  modal?: (modal: ModalInstance, modals: ModalManager) => ReactElement;
 }
 
 export interface ModalProps<ReturnValue = any> extends Record<string, any> {
