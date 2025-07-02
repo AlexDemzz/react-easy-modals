@@ -8,7 +8,7 @@ export interface ModalProps<ReturnValue = any> extends Record<string, any> {
     index: number;
     id: string;
     isOpen: boolean;
-    close: (value: ReturnValue) => void;
+    close: (value?: ReturnValue) => void;
     setBeforeClose: (fn: () => boolean | Promise<boolean>) => void;
 }
 export interface ModalInstance<ReturnValue = any> {
@@ -16,7 +16,7 @@ export interface ModalInstance<ReturnValue = any> {
     id: string;
     data: any;
     isOpen: boolean;
-    close: (value: ReturnValue) => void;
+    close: (value?: ReturnValue) => void;
     setBeforeClose: (fn: () => boolean | Promise<boolean>) => void;
 }
 export interface ModalManager {

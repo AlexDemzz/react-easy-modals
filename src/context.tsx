@@ -1,25 +1,43 @@
 "use client";
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext, ReactElement } from "react";
 import { ModalManager } from "./types";
 import { useModalManager } from "./use-modal-manager";
 
+interface ModalProviderProps {
+  children: ReactNode;
+  backdrop?: (modals: ModalManager) => ReactElement | null;
+  loading?: () => ReactElement | null;
+}
+
 const ModalContext = createContext<ModalManager | null>(null);
 
-export function ModalProvider({ children }: { children: ReactNode }) {
+export function ModalProvider({
+  children,
+  backdrop,
+  loading,
+}: ModalProviderProps) {
   const modalManager = useModalManager();
 
   return (
     <ModalContext.Provider value={modalManager}>
       {children}
-      <Modals />
+      <Modals backdrop={backdrop} loading={loading} />
     </ModalContext.Provider>
   );
 }
 
-function Modals() {
-  const { stack } = useModals();
+interface ModalsProps {
+  backdrop?: (modals: ModalManager) => ReactElement | null;
+  loading?: () => ReactElement | null;
+}
+
+function Modals({ backdrop, loading }: ModalsProps) {
+  const modalManager = useModals();
+  const { stack, isLoading } = modalManager;
+
   return (
     <>
+      {isLoading && loading && loading()}
       {stack.map((modal, index) => {
         return (
           <modal.component
@@ -28,11 +46,12 @@ function Modals() {
             close={(v: any) => modal.close(v)}
             isOpen={modal.isOpen}
             id={modal.id}
-            index={index}
-            setBeforeClose={modal.setBeforeClose}
+            index={modal.index}
+            onBeforeClose={modal.onBeforeClose}
           />
         );
       })}
+      {stack.length > 0 && backdrop && backdrop(modalManager)}
     </>
   );
 }

@@ -9,9 +9,10 @@ import {
 export function useModalManager(): ModalManager {
   const [stack, setStack] = useState<ModalInstance[]>([]);
   const [action, setAction] = useState<ModalAction>("none");
+  const [isLoading, setIsLoading] = useState(false);
   const nextId = useRef(0);
   const beforeCloseCallbacks = useRef<{
-    [id: string]: () => boolean | Promise<boolean>;
+    [id: string]: () => boolean;
   }>({});
 
   const generateId = useCallback(() => {
@@ -21,49 +22,103 @@ export function useModalManager(): ModalManager {
   const updateModalStack = useCallback((newStack: ModalInstance[]) => {
     return newStack.map((modal, index) => ({
       ...modal,
+      index,
       isOpen: index === newStack.length - 1,
     }));
   }, []);
 
+  const canCloseModal = useCallback((id: string): boolean => {
+    const beforeClose = beforeCloseCallbacks.current[id];
+    if (beforeClose) {
+      return beforeClose();
+    }
+    return true;
+  }, []);
+
+  const closeById = useCallback(
+    (id: string): boolean => {
+      let wasClosed = false;
+
+      setStack((prev) => {
+        const modal = prev.find((m) => m.id === id);
+        if (!modal) return prev;
+
+        if (!canCloseModal(id)) {
+          return prev;
+        }
+
+        delete beforeCloseCallbacks.current[id];
+        modal.close(undefined);
+        wasClosed = true;
+
+        const newStack = prev.filter((m) => m.id !== id);
+        setAction("pop");
+        return updateModalStack(newStack);
+      });
+
+      return wasClosed;
+    },
+    [updateModalStack, canCloseModal]
+  );
+
   const open = useCallback(
     <T = any, R = any>(
-      component: React.ComponentType<T>,
+      component:
+        | React.ComponentType<T>
+        | (() => Promise<{ default: React.ComponentType<T> }>),
       data?: any,
       options?: ModalOptions
     ): Promise<R> => {
-      return new Promise<R>((resolve) => {
-        const id = options?.id || generateId();
+      const id = options?.id || generateId();
 
-        async function closeCurrentModal(
-          value: any,
-          resolve: (value: any) => void
-        ) {
-          const beforeClose = beforeCloseCallbacks.current[id];
-          if (beforeClose) {
-            const shouldClose = await beforeClose();
-            if (!shouldClose) {
-              return;
-            }
+      return new Promise<R>(async (resolve, reject) => {
+        let actualComponent: React.ComponentType<T>;
+
+        const isLazyImport =
+          typeof component === "function" && !component.prototype;
+
+        if (isLazyImport) {
+          setIsLoading(true);
+          try {
+            const module = await (
+              component as () => Promise<{ default: React.ComponentType<T> }>
+            )();
+            actualComponent = module.default;
+          } catch (error) {
+            setIsLoading(false);
+            throw error;
           }
-          delete beforeCloseCallbacks.current[id];
-          await resolve(value);
+          setIsLoading(false);
+        } else {
+          actualComponent = component as React.ComponentType<T>;
+        }
+
+        function closeCurrentModal(value: any, resolve: (value: any) => void) {
+          resolve(value);
           closeById(id);
         }
 
-        const setBeforeClose = (fn: () => boolean | Promise<boolean>) => {
-          beforeCloseCallbacks.current[id] = fn;
+        const onBeforeClose = (callback: () => boolean) => {
+          beforeCloseCallbacks.current[id] = callback;
         };
 
         const modalInstance: ModalInstance = {
-          component,
+          component: actualComponent,
           data: data || {},
           id,
           isOpen: false,
           close: (value) => closeCurrentModal(value, resolve),
-          setBeforeClose,
+          onBeforeClose,
+          index: 0,
         };
 
         setStack((prev) => {
+          const existingModal = prev.find((modal) => modal.id === id);
+          if (existingModal) {
+            console.error(
+              `Modal with ID "${id}" already exists, and cant be opened`
+            );
+          }
           let newStack: ModalInstance[];
 
           if (options?.replace && prev.length > 0) {
@@ -78,48 +133,65 @@ export function useModalManager(): ModalManager {
         });
       });
     },
-    [generateId, updateModalStack]
+    [generateId, updateModalStack, closeById]
   );
 
   const close = useCallback(
-    (n: number = 1) => {
+    (n: number = 1): boolean => {
+      let wasAnyClosed = false;
+
       setStack((prev) => {
-        const newStack = [...prev];
-        for (let i = 0; i < n && newStack.length > 0; i++) {
-          const modal = newStack.pop();
-          if (modal) {
+        let newStack = [...prev];
+        let closedCount = 0;
+
+        for (let i = prev.length - 1; i >= 0 && closedCount < n; i--) {
+          const modal = prev[i];
+          if (canCloseModal(modal.id)) {
+            delete beforeCloseCallbacks.current[modal.id];
             modal.close(undefined);
+            newStack = newStack.filter((m) => m.id !== modal.id);
+            closedCount++;
+            wasAnyClosed = true;
           }
         }
-        setAction("pop");
-        return updateModalStack(newStack);
-      });
-    },
-    [updateModalStack]
-  );
 
-  const closeById = useCallback(
-    (id: string) => {
-      setStack((prev) => {
-        const modal = prev.find((m) => m.id === id);
-        if (modal) {
-          modal.close(undefined);
+        if (closedCount > 0) {
+          setAction("pop");
         }
-        const newStack = prev.filter((m) => m.id !== id);
-        setAction("pop");
+
         return updateModalStack(newStack);
       });
+
+      return wasAnyClosed;
     },
-    [updateModalStack]
+    [updateModalStack, canCloseModal]
   );
 
-  const closeAll = useCallback(() => {
+  const closeAll = useCallback((): boolean => {
+    let wasAnyClosed = false;
+
     setStack((prev) => {
-      prev.forEach((modal) => modal.close(undefined));
+      const modalsToClose = prev.filter((modal) => canCloseModal(modal.id));
+
+      if (modalsToClose.length === 0) {
+        return prev;
+      }
+
+      modalsToClose.forEach((modal) => {
+        delete beforeCloseCallbacks.current[modal.id];
+        modal.close(undefined);
+      });
+
+      wasAnyClosed = true;
+
+      const remainingModals = prev.filter((modal) => !canCloseModal(modal.id));
+
       setAction("pop");
-      return updateModalStack([]);
+      return updateModalStack(remainingModals);
     });
-  }, [updateModalStack]);
+
+    return wasAnyClosed;
+  }, [updateModalStack, canCloseModal]);
 
   return {
     open,
@@ -128,5 +200,6 @@ export function useModalManager(): ModalManager {
     closeAll,
     stack,
     action,
+    isLoading,
   };
 }

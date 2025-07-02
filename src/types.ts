@@ -6,12 +6,11 @@ export interface ModalOptions {
 }
 
 export interface ModalProps<ReturnValue = any> extends Record<string, any> {
-  data: any;
   index: number;
   id: string;
   isOpen: boolean;
   close: (value?: ReturnValue) => void;
-  setBeforeClose: (fn: () => boolean | Promise<boolean>) => void;
+  onBeforeClose: (callback: () => boolean) => void;
 }
 
 export interface ModalInstance<ReturnValue = any> {
@@ -20,20 +19,24 @@ export interface ModalInstance<ReturnValue = any> {
   data: any;
   isOpen: boolean;
   close: (value?: ReturnValue) => void;
-  setBeforeClose: (fn: () => boolean | Promise<boolean>) => void;
+  onBeforeClose: (callback: () => boolean) => void;
+  index: number;
 }
 
 export interface ModalManager {
   open: <T = any, R = any>(
-    component: ComponentType<T>,
+    component:
+      | ComponentType<T>
+      | (() => Promise<{ default: ComponentType<T> }>),
     data?: any,
     options?: ModalOptions
   ) => Promise<R>;
-  close: (n?: number) => void;
-  closeById: (id: string) => void;
-  closeAll: () => void;
+  close: (n?: number) => boolean;
+  closeById: (id: string) => boolean;
+  closeAll: () => boolean;
   stack: ModalInstance[];
   action: ModalAction;
+  isLoading: boolean;
 }
 
 export type ModalAction = "none" | "push" | "replace" | "pop";
