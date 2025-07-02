@@ -71,7 +71,7 @@ export function useModalManager(): ModalManager {
     ): Promise<R> => {
       const id = options?.id || generateId();
 
-      return new Promise<R>(async (resolve, reject) => {
+      return new Promise<R>(async (resolve) => {
         let actualComponent: React.ComponentType<T>;
 
         const isLazyImport =
@@ -104,7 +104,6 @@ export function useModalManager(): ModalManager {
 
         const modalInstance: ModalInstance = {
           component: actualComponent,
-          data: data || {},
           id,
           isOpen: false,
           close: (value) => closeCurrentModal(value, resolve),
@@ -112,12 +111,17 @@ export function useModalManager(): ModalManager {
           index: 0,
         };
 
+        if (data) {
+          modalInstance.data = data;
+        }
+
         setStack((prev) => {
           const existingModal = prev.find((modal) => modal.id === id);
           if (existingModal) {
             console.error(
               `Modal with ID "${id}" already exists, and cant be opened`
             );
+            return prev;
           }
           let newStack: ModalInstance[];
 

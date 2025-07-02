@@ -16,7 +16,7 @@ export interface ModalProps<ReturnValue = any> extends Record<string, any> {
 export interface ModalInstance<ReturnValue = any> {
   component: ComponentType<any>;
   id: string;
-  data: any;
+  data?: any;
   isOpen: boolean;
   close: (value?: ReturnValue) => void;
   onBeforeClose: (callback: () => boolean) => void;

@@ -3,15 +3,16 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { createContext, useContext } from "react";
 import { useModalManager } from "./use-modal-manager";
 const ModalContext = createContext(null);
-export function ModalProvider({ children }) {
+export function ModalProvider({ children, backdrop, loading, }) {
     const modalManager = useModalManager();
-    return (_jsxs(ModalContext.Provider, { value: modalManager, children: [children, _jsx(Modals, {})] }));
+    return (_jsxs(ModalContext.Provider, { value: modalManager, children: [children, _jsx(Modals, { backdrop: backdrop, loading: loading })] }));
 }
-function Modals() {
-    const { stack } = useModals();
-    return (_jsx(_Fragment, { children: stack.map((modal, index) => {
-            return (_jsx(modal.component, { data: modal.data, close: (v) => modal.close(v), isOpen: modal.isOpen, id: modal.id, index: index, setBeforeClose: modal.setBeforeClose }, `modal-${modal.id}-${index}`));
-        }) }));
+function Modals({ backdrop, loading }) {
+    const modalManager = useModals();
+    const { stack, isLoading } = modalManager;
+    return (_jsxs(_Fragment, { children: [isLoading && loading && loading(), stack.map((modal, index) => {
+                return (_jsx(modal.component, { data: modal.data, close: (v) => modal.close(v), isOpen: modal.isOpen, id: modal.id, index: modal.index, onBeforeClose: modal.onBeforeClose }, `modal-${modal.id}-${index}`));
+            }), stack.length > 0 && backdrop && backdrop(modalManager)] }));
 }
 export function useModals() {
     const context = useContext(ModalContext);

@@ -38,12 +38,12 @@ function Modals({ backdrop, loading }: ModalsProps) {
   return (
     <>
       {isLoading && loading && loading()}
-      {stack.map((modal, index) => {
+      {stack.map((modal) => {
         return (
           <modal.component
-            key={`modal-${modal.id}-${index}`}
+            key={modal.id}
             data={modal.data}
-            close={(v: any) => modal.close(v)}
+            close={modal.close}
             isOpen={modal.isOpen}
             id={modal.id}
             index={modal.index}
