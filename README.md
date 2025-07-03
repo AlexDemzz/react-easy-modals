@@ -2,110 +2,105 @@
 
 A headless React modal management library with easy-to-use hooks, adapted from [svelte-modals](https://github.com/mattjennings/svelte-modals) for React applications.
 
+[📚 Documentation](https://react-easy-modals-docs.vercel.app/)
+
+
 ## Installation
 
 ```bash
 npm install react-easy-modals
-# or
-yarn add react-easy-modals
-# or
-pnpm add react-easy-modals
 ```
 
-## Usage
+## Add ModalProvider to your app
+
+Wrap your app with `ModalProvider` to enable modals:
 
 ```tsx
-import { ModalProvider, useModals, Modals, useModalManager } from 'react-easy-modals';
+import { ModalProvider } from 'react-easy-modals'
 
 function App() {
   return (
     <ModalProvider>
-      <YourApp />
-      <Modals />
+       {/* Your app content */}
     </ModalProvider>
-  );
+  )
 }
 
-function YourComponent() {
-  const { openModal } = useModals();
-  const modalManager = useModalManager();
-
-  const handleOpenModal = () => {
-    openModal('myModal', {
-      title: 'My Modal',
-      content: 'This is my modal content'
-    });
-  };
-
-  return (
-    <button onClick={handleOpenModal}>
-      Open Modal
-    </button>
-  );
-}
+export default App
 ```
 
-## Promise Example
+## Create your Modal component
+
+Create a basic modal component:
 
 ```tsx
-function ConfirmModal({ close, data }) {
+function Modal({
+  data,
+  close,
+  isOpen,
+}) {
+  if (!isOpen) return null;
+
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <h2>Confirm Action</h2>
-        <p>{data?.message || 'Are you sure?'}</p>
-        <div className="modal-actions">
-          <button onClick={() => close('confirmed')}>Confirm</button>
-          <button onClick={() => close('cancelled')}>Cancel</button>
-        </div>
+    <div className="modal-backdrop">
+      <div className="modal">
+        <strong>{data.title}</strong>
+        <p>{data.message}</p>
+        <button onClick={() => close()}>OK</button>
       </div>
+      <style jsx>{`
+        .modal-backdrop {
+          position: fixed;
+          z-index: 50;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .modal {
+          color: white;
+          background: black;
+          border: 1px solid gray;
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          width: 300px;
+        }
+        .modal button {
+          background: white;
+          color: black;
+          padding: 5px;
+        }
+      `}</style>
     </div>
   );
 }
-
-function MyComponent() {
-  const { open } = useModals();
-
-  const handleDelete = async () => {
-    const result = await open(ConfirmModal, {
-      message: 'Are you sure you want to delete this item?'
-    });
-
-    if (result === 'confirmed') {
-      // User confirmed, proceed with deletion
-      console.log('Deleting item...');
-    } else {
-      // User cancelled
-      console.log('Deletion cancelled');
-    }
-  };
-
-  return (
-    <button onClick={handleDelete}>
-      Delete Item
-    </button>
-  );
-}
 ```
 
-## API
+## Try it out
 
-### Components
+Import `useModals` anywhere in your app to open or close your modals:
 
-- `ModalProvider` - Context provider for modal management
-- `Modals` - Renders all active modals
+```tsx
+import { useModals } from 'react-easy-modals'
+import Modal from './Modal'
 
-### Hooks
+function Page() {
+  const modals = useModals()
 
-- `useModals()` - Hook to access modal operations
-- `useModalManager()` - Hook to access the modal manager instance
+  const handleClick = () => {
+    modals.open(Modal, { 
+      title: "Alert", 
+      message: "This is an alert" 
+    })
+  }
 
-### Types
-
-- `ModalManager` - Type for the modal manager
-- `ModalInstance` - Type for a modal instance
-- `ModalOptions` - Type for modal options
-
-## License
-
-ISC 
+  return (
+    <button onClick={handleClick}>
+      Open Modal
+    </button>
+  )
+}
+```
