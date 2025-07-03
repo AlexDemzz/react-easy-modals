@@ -4,16 +4,14 @@ import { createContext, useContext } from "react";
 import { useModalManager } from "./use-modal-manager";
 import { ModalItemProvider } from "./item-context";
 const ModalContext = createContext(null);
-export function ModalProvider({ children, backdrop, loading, }) {
+export function ModalProvider({ children, backdrop, loading, modal, }) {
     const modalManager = useModalManager();
-    return (_jsxs(ModalContext.Provider, { value: modalManager, children: [children, _jsx(Modals, { backdrop: backdrop, loading: loading })] }));
+    return (_jsxs(ModalContext.Provider, { value: modalManager, children: [children, _jsx(Modals, { backdrop: backdrop, loading: loading, modal: modal })] }));
 }
-function Modals({ backdrop, loading }) {
+function Modals({ backdrop, loading, modal, }) {
     const modalManager = useModals();
     const { stack, isLoading } = modalManager;
-    return (_jsxs(_Fragment, { children: [isLoading && loading && loading(), stack.map((modal) => {
-                return (_jsx(ModalItemProvider, { modal: modal, children: _jsx(modal.component, { data: modal.data, close: modal.close, isOpen: modal.isOpen, id: modal.id, index: modal.index }) }, modal.id));
-            }), stack.length > 0 && backdrop && backdrop(modalManager)] }));
+    return (_jsxs(_Fragment, { children: [isLoading && loading && loading(modalManager), stack.map((modalInstance) => (_jsx(ModalItemProvider, { modal: modalInstance, children: modal ? (modal(modalInstance, modalManager)) : (_jsx(modalInstance.component, { data: modalInstance.data, close: modalInstance.close, isOpen: modalInstance.isOpen, id: modalInstance.id, index: modalInstance.index })) }, modalInstance.id))), (isLoading || stack.length > 0) && backdrop && backdrop(modalManager)] }));
 }
 export function useModals() {
     const context = useContext(ModalContext);

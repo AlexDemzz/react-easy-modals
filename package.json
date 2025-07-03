@@ -1,7 +1,8 @@
 {
   "name": "react-easy-modals",
   "version": "1.0.5",
-  "description": "A simple, flexible, zero-dependency modal stack manager for React (port of svelte-modals).",
+  "description": "A simple, flexible, headless, zero-dependency modal stack manager for React (port of svelte-modals).",
+  "homepage": "https://react-easy-modals-docs.vercel.app/",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -17,20 +18,29 @@
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "release": "release-it"
   },
   "keywords": [
     "react",
     "modal",
     "typescript",
     "hooks",
-    "context",
+    "dialog",
     "ui",
     "headless",
-    "manager"
+    "manager",
+    "promise"
   ],
-  "author": "Alexandre Joly (https://alexandrejoly.me)",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AlexDemzz/react-easy-modals.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Alexandre Joly",
+    "url": "https://github.com/AlexDemzz"
+  },
   "packageManager": "pnpm@10.12.4",
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -39,6 +49,13 @@
   "devDependencies": {
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
+    "release-it": "^19.0.3",
     "typescript": "^5.0.0"
+  },
+  "release-it": {
+    "$schema": "https://unpkg.com/release-it/schema/release-it.json",
+    "github": {
+      "release": true
+    }
   }
 }
