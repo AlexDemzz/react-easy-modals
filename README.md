@@ -1,17 +1,18 @@
 # React Easy Modals
 
-A simple, flexible, zero-dependency modal manager for React, (port of [svelte-modals](https://github.com/mattjennings/svelte-modals)).
+A simple, flexible, zero-dependency modal manager for React (port of [svelte-modals](https://github.com/mattjennings/svelte-modals)).
 
 [📚 Documentation](https://react-easy-modals-docs.vercel.app/)
 
+## Get started
 
-## Installation
+### Installation
 
 ```bash
 npm install react-easy-modals
 ```
 
-## Add ModalProvider to your app
+### Add ModalProvider to your app
 
 Wrap your app with `ModalProvider` to enable modals:
 
@@ -29,7 +30,7 @@ function App() {
 export default App
 ```
 
-## Create your Modal component
+### Create your Modal component
 
 Create a basic modal component:
 
@@ -79,7 +80,7 @@ function Modal({
 }
 ```
 
-## Try it out
+### Try it out
 
 Import `useModals` anywhere in your app to open or close your modals:
 
