@@ -1,6 +1,6 @@
 # React Easy Modals
 
-A headless React modal management library with easy-to-use hooks, adapted from [svelte-modals](https://github.com/mattjennings/svelte-modals) for React applications.
+A simple, flexible, zero-dependency modal manager for React, (port of [svelte-modals](https://github.com/mattjennings/svelte-modals)).
 
 [📚 Documentation](https://react-easy-modals-docs.vercel.app/)
 
