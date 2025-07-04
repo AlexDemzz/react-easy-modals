@@ -1,4 +1,5 @@
 # React Easy Modals
+[![bundle size](https://img.shields.io/bundlephobia/minzip/react-easy-modals)](https://bundlephobia.com/result?p=react-easy-modals)
 
 A simple, flexible, zero-dependency modal manager for React (port of [svelte-modals](https://github.com/mattjennings/svelte-modals)).
 
