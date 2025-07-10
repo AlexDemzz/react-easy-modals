@@ -1,9 +1,11 @@
-import { useState, useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
-  ModalManager,
-  ModalInstance,
-  ModalOptions,
   ModalAction,
+  ModalComponent,
+  ModalInstance,
+  ModalManager,
+  ModalOptions,
+  ModalProps,
 } from "./types";
 
 export function useModalManager(): ModalManager {
@@ -75,15 +77,15 @@ export function useModalManager(): ModalManager {
   const open = useCallback(
     <T = any, R = any>(
       component:
-        | React.ComponentType<T>
-        | (() => Promise<{ default: React.ComponentType<T> }>),
-      data?: any,
+        | ModalComponent<T, R>
+        | (() => Promise<{ default: ModalComponent<T, R> }>),
+      props?: Omit<T, keyof ModalProps<R>>,
       options?: ModalOptions
     ): Promise<R> => {
       const id = options?.id || generateId();
 
       return new Promise<R>(async (resolve) => {
-        let actualComponent: React.ComponentType<T>;
+        let actualComponent: ModalComponent<T, R>;
 
         const isLazyImport =
           typeof component === "function" && !component.prototype;
@@ -92,7 +94,7 @@ export function useModalManager(): ModalManager {
           setIsLoading(true);
           try {
             const module = await (
-              component as () => Promise<{ default: React.ComponentType<T> }>
+              component as () => Promise<{ default: ModalComponent<T, R> }>
             )();
             actualComponent = module.default;
           } catch (error) {
@@ -101,28 +103,25 @@ export function useModalManager(): ModalManager {
           }
           setIsLoading(false);
         } else {
-          actualComponent = component as React.ComponentType<T>;
+          actualComponent = component as ModalComponent<T, R>;
         }
 
-        const newModalInstance: ModalInstance = {
+        const newModalInstance: ModalInstance<T, R> = {
           component: actualComponent,
           id,
           isOpen: false,
           onBeforeClose: (callback: () => boolean) => {
             beforeCloseCallbacks.current.set(id, callback);
           },
-          close: (value) => {
+          close: (value?: R) => {
             if (canClose(id)) {
-              resolve(value);
+              resolve(value as R);
               closeCurrent(id);
             }
           },
+          props,
           index: 0,
         };
-
-        if (data) {
-          newModalInstance.data = data;
-        }
 
         setStack((prev) => {
           const existingModal = prev.find((modal) => modal.id === id);
@@ -151,6 +150,11 @@ export function useModalManager(): ModalManager {
 
   const close = useCallback(
     (n: number = 1): boolean => {
+      if (typeof n !== "number" || n < 1) {
+        throw new Error(
+          `amount must be a number greater than 0. Received ${n}`
+        );
+      }
       let closedCount = 0;
       setStack((prev) => {
         let newStack = [...prev];

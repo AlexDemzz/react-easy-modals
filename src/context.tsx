@@ -1,8 +1,7 @@
-"use client";
-import { createContext, ReactNode, useContext, ReactElement } from "react";
+import { createContext, useContext } from "react";
+import { ModalItemProvider } from "./item-context";
 import { ModalManager, ModalProviderProps } from "./types";
 import { useModalManager } from "./use-modal-manager";
-import { ModalItemProvider } from "./item-context";
 
 const ModalContext = createContext<ModalManager | null>(null);
 
@@ -39,7 +38,7 @@ function Modals({
             modal(modalInstance, modalManager)
           ) : (
             <modalInstance.component
-              data={modalInstance.data}
+              {...modalInstance.props}
               close={modalInstance.close}
               isOpen={modalInstance.isOpen}
               id={modalInstance.id}

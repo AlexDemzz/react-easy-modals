@@ -12,17 +12,22 @@ export interface ModalProviderProps {
   modal?: (modal: ModalInstance, modals: ModalManager) => ReactElement;
 }
 
-export interface ModalProps<ReturnValue = any> extends Record<string, any> {
+export interface ModalProps<ReturnValue = any> {
   index: number;
   id: string;
   isOpen: boolean;
   close: (value?: ReturnValue) => void;
 }
 
-export interface ModalInstance<ReturnValue = any> {
-  component: ComponentType<any>;
+// Type commun pour les composants modaux
+export type ModalComponent<T = any, ReturnValue = any> = ComponentType<
+  ModalProps<ReturnValue> & T
+>;
+
+export interface ModalInstance<T = any, ReturnValue = any> {
+  component: ModalComponent<T, ReturnValue>;
   id: string;
-  data?: any;
+  props?: Omit<T, keyof ModalProps<ReturnValue>>;
   isOpen: boolean;
   close: (value?: ReturnValue) => void;
   index: number;
@@ -30,13 +35,21 @@ export interface ModalInstance<ReturnValue = any> {
 }
 
 export interface ModalManager {
-  open: <T = any, R = any>(
-    component:
-      | ComponentType<T>
-      | (() => Promise<{ default: ComponentType<T> }>),
-    data?: any,
-    options?: ModalOptions
-  ) => Promise<R>;
+  open: {
+    <T extends Record<string, never>, R = any>(
+      component:
+        | ModalComponent<T, R>
+        | (() => Promise<{ default: ModalComponent<T, R> }>),
+      options?: ModalOptions
+    ): Promise<R>;
+    <T, R = any>(
+      component:
+        | ModalComponent<T, R>
+        | (() => Promise<{ default: ModalComponent<T, R> }>),
+      props: Omit<T, keyof ModalProps<R>>,
+      options?: ModalOptions
+    ): Promise<R>;
+  };
   close: (n?: number) => boolean;
   closeById: (id: string) => boolean;
   closeAll: () => boolean;
