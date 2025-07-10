@@ -1,5 +1,5 @@
 import { ModalInstance } from "./types";
-export declare function useModal(): ModalInstance<any>;
+export declare function useModal(): ModalInstance<any, any>;
 export declare function useBeforeClose(callback: () => boolean): void;
 export declare function ModalItemProvider({ modal, children, }: {
     modal: ModalInstance;

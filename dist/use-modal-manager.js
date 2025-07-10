@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 export function useModalManager() {
     const [stack, setStack] = useState([]);
     const [action, setAction] = useState("none");
@@ -47,7 +47,7 @@ export function useModalManager() {
         });
         return wasClosed;
     }, [updateModalStack, canClose]);
-    const open = useCallback((component, data, options) => {
+    const open = useCallback((component, props, options) => {
         const id = options?.id || generateId();
         return new Promise(async (resolve) => {
             let actualComponent;
@@ -80,11 +80,9 @@ export function useModalManager() {
                         closeCurrent(id);
                     }
                 },
+                props,
                 index: 0,
             };
-            if (data) {
-                newModalInstance.data = data;
-            }
             setStack((prev) => {
                 const existingModal = prev.find((modal) => modal.id === id);
                 if (existingModal) {
@@ -105,6 +103,9 @@ export function useModalManager() {
         });
     }, [generateId, updateModalStack, closeById, canClose]);
     const close = useCallback((n = 1) => {
+        if (typeof n !== "number" || n < 1) {
+            throw new Error(`amount must be a number greater than 0. Received ${n}`);
+        }
         let closedCount = 0;
         setStack((prev) => {
             let newStack = [...prev];

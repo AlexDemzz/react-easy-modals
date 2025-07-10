@@ -37,7 +37,8 @@ Create a basic modal component:
 
 ```tsx
 function Modal({
-  data,
+  title,
+  message,
   close,
   isOpen,
 }) {
@@ -46,8 +47,8 @@ function Modal({
   return (
     <div className="modal-backdrop">
       <div className="modal">
-        <strong>{data.title}</strong>
-        <p>{data.message}</p>
+        <strong>{title}</strong>
+        <p>{message}</p>
         <button onClick={() => close()}>OK</button>
       </div>
       <style jsx>{`

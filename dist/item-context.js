@@ -1,4 +1,3 @@
-"use client";
 import { jsx as _jsx } from "react/jsx-runtime";
 import { createContext, useContext, useEffect } from "react";
 const ModalItemContext = createContext(null);
