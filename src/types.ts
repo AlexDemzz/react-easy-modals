@@ -31,7 +31,7 @@ export interface ModalInstance<T = any, ReturnValue = any> {
   isOpen: boolean;
   close: (value?: ReturnValue) => void;
   index: number;
-  onBeforeClose: (callback: () => boolean) => void;
+  onBeforeClose: (callback: (value?: ReturnValue) => boolean) => void;
 }
 
 export interface ModalManager {

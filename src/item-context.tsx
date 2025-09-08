@@ -13,11 +13,11 @@ export function useModal() {
   return modal;
 }
 
-export function useBeforeClose(callback: () => boolean) {
+export function useBeforeClose<R = unknown>(callback: (value?: R) => boolean) {
   const modal = useModal();
 
   useEffect(() => {
-    modal.onBeforeClose(callback);
+    modal.onBeforeClose(callback as (value?: any) => boolean);
   }, [modal, callback]);
 }
 

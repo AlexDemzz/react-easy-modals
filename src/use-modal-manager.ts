@@ -13,7 +13,9 @@ export function useModalManager(): ModalManager {
   const [action, setAction] = useState<ModalAction>("none");
   const [isLoading, setIsLoading] = useState(false);
   const nextId = useRef(0);
-  const beforeCloseCallbacks = useRef<Map<string, () => boolean>>(new Map());
+  const beforeCloseCallbacks = useRef<
+    Map<string, (value?: unknown) => boolean>
+  >(new Map());
 
   const generateId = useCallback(() => {
     return `modal-${nextId.current++}`;
@@ -27,9 +29,9 @@ export function useModalManager(): ModalManager {
     }));
   }, []);
 
-  const canClose = useCallback((id: string): boolean => {
+  const canClose = useCallback((id: string, value?: unknown): boolean => {
     const callback = beforeCloseCallbacks.current.get(id);
-    return callback ? callback() : true;
+    return callback ? callback(value) : true;
   }, []);
 
   const closeById = useCallback(
@@ -56,12 +58,12 @@ export function useModalManager(): ModalManager {
 
       return wasClosed;
     },
-    [updateModalStack, canClose]
+    [updateModalStack]
   );
 
   const closeCurrent = useCallback(
     (id: string): boolean => {
-      let wasClosed = false;
+      const wasClosed = true;
 
       setStack((prev) => {
         const newStack = prev.filter((m) => m.id !== id);
@@ -71,7 +73,7 @@ export function useModalManager(): ModalManager {
 
       return wasClosed;
     },
-    [updateModalStack, canClose]
+    [updateModalStack]
   );
 
   const open = useCallback(
@@ -93,10 +95,10 @@ export function useModalManager(): ModalManager {
         if (isLazyImport) {
           setIsLoading(true);
           try {
-            const module = await (
+            const lazyModule = await (
               component as () => Promise<{ default: ModalComponent<T, R> }>
             )();
-            actualComponent = module.default;
+            actualComponent = lazyModule.default;
           } catch (error) {
             setIsLoading(false);
             throw error;
@@ -110,11 +112,14 @@ export function useModalManager(): ModalManager {
           component: actualComponent,
           id,
           isOpen: false,
-          onBeforeClose: (callback: () => boolean) => {
-            beforeCloseCallbacks.current.set(id, callback);
+          onBeforeClose: (callback: (value?: R) => boolean) => {
+            beforeCloseCallbacks.current.set(
+              id,
+              callback as (value?: unknown) => boolean
+            );
           },
           close: (value?: R) => {
-            if (canClose(id)) {
+            if (canClose(id, value)) {
               resolve(value as R);
               closeCurrent(id);
             }
@@ -145,7 +150,7 @@ export function useModalManager(): ModalManager {
         });
       });
     },
-    [generateId, updateModalStack, closeById, canClose]
+    [generateId, updateModalStack, closeCurrent, canClose]
   );
 
   const close = useCallback(
