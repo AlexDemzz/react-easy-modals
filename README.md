@@ -1,7 +1,8 @@
 # React Easy Modals
+
 [![bundle size](https://img.shields.io/bundlephobia/minzip/react-easy-modals)](https://bundlephobia.com/result?p=react-easy-modals)
 
-A simple, flexible, zero-dependency modal manager for React (port of [svelte-modals](https://github.com/mattjennings/svelte-modals)).
+A simple, flexible, zero-dependency, type-safe modal manager for React (port of [svelte-modals](https://github.com/mattjennings/svelte-modals)).
 
 [📚 Documentation](https://react-easy-modals-docs.vercel.app/)
 
@@ -18,17 +19,13 @@ npm install react-easy-modals
 Wrap your app with `ModalProvider` to enable modals:
 
 ```tsx
-import { ModalProvider } from 'react-easy-modals'
+import { ModalProvider } from "react-easy-modals";
 
 function App() {
-  return (
-    <ModalProvider>
-       {/* Your app content */}
-    </ModalProvider>
-  )
+  return <ModalProvider>{/* Your app content */}</ModalProvider>;
 }
 
-export default App
+export default App;
 ```
 
 ### Create your Modal component
@@ -36,12 +33,7 @@ export default App
 Create a basic modal component:
 
 ```tsx
-function Modal({
-  title,
-  message,
-  close,
-  isOpen,
-}) {
+function Modal({ title, message, close, isOpen }) {
   if (!isOpen) return null;
 
   return (
@@ -87,23 +79,19 @@ function Modal({
 Import `useModals` anywhere in your app to open or close your modals:
 
 ```tsx
-import { useModals } from 'react-easy-modals'
-import Modal from './Modal'
+import { useModals } from "react-easy-modals";
+import Modal from "./Modal";
 
 function Page() {
-  const modals = useModals()
+  const modals = useModals();
 
   const handleClick = () => {
-    modals.open(Modal, { 
-      title: "Alert", 
-      message: "This is an alert" 
-    })
-  }
+    modals.open(Modal, {
+      title: "Alert",
+      message: "This is an alert",
+    });
+  };
 
-  return (
-    <button onClick={handleClick}>
-      Open Modal
-    </button>
-  )
+  return <button onClick={handleClick}>Open Modal</button>;
 }
 ```
