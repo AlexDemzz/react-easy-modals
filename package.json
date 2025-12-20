@@ -58,8 +58,7 @@
       "release": true
     },
     "npm": {
-      "skipChecks": true,
-      "publishArgs": ["--provenance", "--access", "public"]
+      "publish": false
     }
   }
 }
