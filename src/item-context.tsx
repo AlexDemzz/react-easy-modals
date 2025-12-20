@@ -14,7 +14,11 @@ export function useModal() {
 }
 
 export function useBeforeClose<R = unknown>(callback: (value?: R) => boolean) {
-  const modal = useModal();
+  const modal = useContext(ModalItemContext);
+
+  if (!modal) {
+    throw new Error("useBeforeClose must be called inside a modal component");
+  }
 
   useEffect(() => {
     modal.onBeforeClose(callback as (value?: any) => boolean);

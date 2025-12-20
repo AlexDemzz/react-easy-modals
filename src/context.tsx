@@ -1,6 +1,11 @@
-import { createContext, useContext } from "react";
+import { createContext, ReactNode, useContext } from "react";
 import { ModalItemProvider } from "./item-context";
-import { ModalManager, ModalProviderProps } from "./types";
+import {
+  InternalModalInstance,
+  ModalInstance,
+  ModalManager,
+  ModalProviderProps,
+} from "./types";
 import { useModalManager } from "./use-modal-manager";
 
 const ModalContext = createContext<ModalManager | null>(null);
@@ -27,26 +32,46 @@ function Modals({
   modal,
 }: Omit<ModalProviderProps, "children">) {
   const modalManager = useModals();
-  const { stack, isLoading } = modalManager;
+  const { stack, isLoading, createOpen } = modalManager;
+
+  const renderModal = (internalModal: InternalModalInstance, isNested: boolean = false): ReactNode => {
+    const open = createOpen(internalModal.id);
+
+    const nestedElement = internalModal.nested
+      ? renderModal(internalModal.nested, true)
+      : null;
+
+    const modalInstance: ModalInstance = {
+      ...internalModal,
+      nested: nestedElement,
+      open,
+      isNested,
+    };
+
+    return (
+      <ModalItemProvider key={modalInstance.id} modal={modalInstance}>
+        {modal ? (
+          modal(modalInstance, modalManager)
+        ) : (
+          <modalInstance.component
+            {...modalInstance.props}
+            close={modalInstance.close}
+            isOpen={modalInstance.isOpen}
+            isNested={isNested}
+            id={modalInstance.id}
+            index={modalInstance.index}
+            open={modalInstance.open}
+            nested={nestedElement}
+          />
+        )}
+      </ModalItemProvider>
+    );
+  };
 
   return (
     <>
       {isLoading && loading && loading(modalManager)}
-      {stack.map((modalInstance) => (
-        <ModalItemProvider key={modalInstance.id} modal={modalInstance}>
-          {modal ? (
-            modal(modalInstance, modalManager)
-          ) : (
-            <modalInstance.component
-              {...modalInstance.props}
-              close={modalInstance.close}
-              isOpen={modalInstance.isOpen}
-              id={modalInstance.id}
-              index={modalInstance.index}
-            />
-          )}
-        </ModalItemProvider>
-      ))}
+      {stack.map((internalModal) => renderModal(internalModal))}
       {(isLoading || stack.length > 0) && backdrop && backdrop(modalManager)}
     </>
   );
