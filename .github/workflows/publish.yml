@@ -1,0 +1,22 @@
+# GitHub Actions example
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # For git operations
+      id-token: write # < REQUIRED FOR OIDC
+
+    steps:
+      - uses: actions/checkout
+      - uses: actions/setup-node
+        with:
+          node-version: "lts/*"
+          registry-url: "https://registry.npmjs.org"
+
+      # OIDC requires npm v11.5.1 or later
+      # Node.js v20 comes with v10.8, so we need to update it:
+      - run: npm install -g npm@latest
+      - run: npm ci
+      - run: npx release-it --ci
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
