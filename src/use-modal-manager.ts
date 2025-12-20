@@ -61,7 +61,7 @@ export function useModalManager(): ModalManager {
         .map((modal) => {
           if (modal.nested) {
             if (modal.nested.id === id) {
-              const { nested, ...rest } = modal;
+              const { nested: _, ...rest } = modal;
               return rest;
             }
             const newNested = removeModalById([modal.nested], id)[0];

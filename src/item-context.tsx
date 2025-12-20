@@ -1,16 +1,24 @@
 import { createContext, useContext, useEffect } from "react";
-import { ModalInstance } from "./types";
+import { InternalModalInstanceItem, ModalProps } from "./types";
 
-const ModalItemContext = createContext<ModalInstance | null>(null);
+const ModalItemContext = createContext<InternalModalInstanceItem | null>(null);
 
-export function useModal() {
+export function useModal<R = unknown>(): ModalProps<R> {
   const modal = useContext(ModalItemContext);
 
   if (!modal) {
     throw new Error("useModal must be called inside a modal component");
   }
 
-  return modal;
+  return {
+    id: modal.id,
+    index: modal.index,
+    isOpen: modal.isOpen,
+    isNested: modal.isNested,
+    close: modal.close as (value?: R) => void,
+    open: modal.open,
+    nested: modal.nested,
+  };
 }
 
 export function useBeforeClose<R = unknown>(callback: (value?: R) => boolean) {
@@ -29,7 +37,7 @@ export function ModalItemProvider({
   modal,
   children,
 }: {
-  modal: ModalInstance;
+  modal: InternalModalInstanceItem;
   children: React.ReactNode;
 }) {
   return (

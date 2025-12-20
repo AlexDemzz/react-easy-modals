@@ -2,8 +2,9 @@ import { createContext, ReactNode, useContext } from "react";
 import { ModalItemProvider } from "./item-context";
 import {
   InternalModalInstance,
-  ModalInstance,
+  InternalModalInstanceItem,
   ModalManager,
+  ModalProps,
   ModalProviderProps,
 } from "./types";
 import { useModalManager } from "./use-modal-manager";
@@ -41,26 +42,36 @@ function Modals({
       ? renderModal(internalModal.nested, true)
       : null;
 
-    const modalInstance: ModalInstance = {
+    const internalModalItem: InternalModalInstanceItem = {
       ...internalModal,
       nested: nestedElement,
       open,
       isNested,
     };
 
+    const modalProps: ModalProps = {
+      id: internalModalItem.id,
+      isOpen: internalModalItem.isOpen,
+      isNested: internalModalItem.isNested,
+      close: internalModalItem.close,
+      index: internalModalItem.index,
+      nested: nestedElement,
+      open,
+    };
+
     return (
-      <ModalItemProvider key={modalInstance.id} modal={modalInstance}>
+      <ModalItemProvider key={internalModalItem.id} modal={internalModalItem}>
         {modal ? (
-          modal(modalInstance, modalManager)
+          modal(modalProps, modalManager)
         ) : (
-          <modalInstance.component
-            {...modalInstance.props}
-            close={modalInstance.close}
-            isOpen={modalInstance.isOpen}
+          <internalModalItem.component
+            {...internalModalItem.props}
+            close={internalModalItem.close}
+            isOpen={internalModalItem.isOpen}
             isNested={isNested}
-            id={modalInstance.id}
-            index={modalInstance.index}
-            open={modalInstance.open}
+            id={internalModalItem.id}
+            index={internalModalItem.index}
+            open={internalModalItem.open}
             nested={nestedElement}
           />
         )}

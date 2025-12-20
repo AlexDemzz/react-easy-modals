@@ -9,7 +9,7 @@ export interface ModalProviderProps {
   children: ReactNode;
   backdrop?: (modals: ModalManager) => ReactElement | null;
   loading?: (modals: ModalManager) => ReactElement | null;
-  modal?: (modal: ModalInstance, modals: ModalManager) => ReactElement;
+  modal?: (modal: ModalProps, modals: ModalManager) => ReactElement;
 }
 
 export type OpenFunction = {
@@ -43,17 +43,11 @@ export type ModalComponent<T = any, ReturnValue = any> = ComponentType<
   ModalProps<ReturnValue> & T
 >;
 
-export interface ModalInstance<T = any, ReturnValue = any> {
+export interface InternalModalInstanceItem<T = any, ReturnValue = any>
+  extends ModalProps<ReturnValue> {
   component: ModalComponent<T, ReturnValue>;
-  id: string;
   props?: Omit<T, keyof ModalProps<ReturnValue>>;
-  isOpen: boolean;
-  isNested: boolean;
-  close: (value?: ReturnValue) => void;
-  index: number;
   onBeforeClose: (callback: (value?: ReturnValue) => boolean) => void;
-  nested: ReactNode;
-  open: OpenFunction;
 }
 
 export interface ModalManager {
