@@ -20,6 +20,6 @@ jobs:
 
       - run: npm install -g npm@latest
       - run: npm ci
-      - run: npx release-it --ci --no-git --npm.publish --npm.skipChecks
+      - run: npm publish --provenance --access public
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

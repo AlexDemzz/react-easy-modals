@@ -5,6 +5,10 @@ export interface ModalOptions {
   replace?: boolean;
 }
 
+export interface CloseOptions {
+  force?: boolean;
+}
+
 export interface ModalProviderProps {
   children: ReactNode;
   backdrop?: (modals: ModalManager) => ReactElement | null;
@@ -33,7 +37,7 @@ export interface ModalProps<ReturnValue = any> {
   id: string;
   isOpen: boolean;
   isNested: boolean;
-  close: (value?: ReturnValue) => void;
+  close: (value?: ReturnValue, options?: CloseOptions) => void;
   open: OpenFunction;
   nested?: ReactNode;
 }
@@ -66,9 +70,9 @@ export interface ModalManager {
       options?: ModalOptions
     ): Promise<R>;
   };
-  close: (n?: number) => boolean;
-  closeById: (id: string) => boolean;
-  closeAll: () => boolean;
+  close: (n?: number, options?: CloseOptions) => boolean;
+  closeById: (id: string, options?: CloseOptions) => boolean;
+  closeAll: (options?: CloseOptions) => boolean;
   stack: InternalModalInstance[];
   action: ModalAction;
   isLoading: boolean;
@@ -80,7 +84,7 @@ export interface InternalModalInstance<T = any, ReturnValue = any> {
   id: string;
   props?: Omit<T, keyof ModalProps<ReturnValue>>;
   isOpen: boolean;
-  close: (value?: ReturnValue) => void;
+  close: (value?: ReturnValue, options?: CloseOptions) => void;
   index: number;
   onBeforeClose: (callback: (value?: ReturnValue) => boolean) => void;
   nested?: InternalModalInstance;

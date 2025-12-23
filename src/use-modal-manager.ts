@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import {
+  CloseOptions,
   InternalModalInstance,
   ModalAction,
   ModalComponent,
@@ -100,7 +101,7 @@ export function useModalManager(): ModalManager {
   }, []);
 
   const closeById = useCallback(
-    (id: string): boolean => {
+    (id: string, options?: CloseOptions): boolean => {
       let wasClosed = false;
 
       setStack((prev) => {
@@ -110,7 +111,7 @@ export function useModalManager(): ModalManager {
           return prev;
         }
 
-        if (!canClose(id)) {
+        if (!options?.force && !canClose(id)) {
           return prev;
         }
 
@@ -183,8 +184,8 @@ export function useModalManager(): ModalManager {
               callback as (value?: unknown) => boolean
             );
           },
-          close: (value?: R) => {
-            if (canClose(id, value)) {
+          close: (value?: R, options?: CloseOptions) => {
+            if (options?.force || canClose(id, value)) {
               resolve(value as R);
               closeCurrent(id);
             }
@@ -219,7 +220,7 @@ export function useModalManager(): ModalManager {
   );
 
   const close = useCallback(
-    (n: number = 1): boolean => {
+    (n: number = 1, options?: CloseOptions): boolean => {
       if (typeof n !== "number" || n < 1) {
         throw new Error(
           `amount must be a number greater than 0. Received ${n}`
@@ -233,7 +234,7 @@ export function useModalManager(): ModalManager {
 
         for (let i = prev.length - 1; i >= 0 && closedCount < n; i--) {
           const modal = prev[i];
-          if (canClose(modal.id)) {
+          if (options?.force || canClose(modal.id)) {
             beforeCloseCallbacks.current.delete(modal.id);
             newStack = newStack.filter((m) => m.id !== modal.id);
             closedCount += 1;
@@ -253,20 +254,38 @@ export function useModalManager(): ModalManager {
     [updateModalStack, canClose]
   );
 
-  const closeAll = useCallback((): boolean => {
+  const closeAll = useCallback((options?: CloseOptions): boolean => {
     let wasAnyClosed = false;
+
     setStack((prev) => {
-      if (prev.length > 0) {
+      if (prev.length === 0) return prev;
+
+      if (options?.force) {
         wasAnyClosed = true;
         setAction("pop");
         beforeCloseCallbacks.current.clear();
         return [];
       }
-      return prev;
+
+      const remainingModals: InternalModalInstance[] = [];
+      for (const modal of prev) {
+        if (canClose(modal.id)) {
+          wasAnyClosed = true;
+          beforeCloseCallbacks.current.delete(modal.id);
+        } else {
+          remainingModals.push(modal);
+        }
+      }
+
+      if (wasAnyClosed) {
+        setAction("pop");
+      }
+
+      return updateModalStack(remainingModals);
     });
 
     return wasAnyClosed;
-  }, []);
+  }, [canClose, updateModalStack]);
 
   const openNested = useCallback(
     <T = unknown, R = unknown>(
@@ -319,8 +338,8 @@ export function useModalManager(): ModalManager {
                 callback as (value?: unknown) => boolean
               );
             },
-            close: (value?: R) => {
-              if (canClose(id, value)) {
+            close: (value?: R, closeOptions?: CloseOptions) => {
+              if (closeOptions?.force || canClose(id, value)) {
                 resolve(value as R);
                 beforeCloseCallbacks.current.delete(id);
                 setStack((prevStack) => removeModalById(prevStack, id));
