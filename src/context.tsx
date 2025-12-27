@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, Fragment, ReactNode, useContext } from "react";
 import { ModalItemProvider } from "./item-context";
 import {
   InternalModalInstance,
@@ -60,7 +60,7 @@ function Modals({
     };
 
     return (
-      <ModalItemProvider key={internalModalItem.id} modal={internalModalItem}>
+      <ModalItemProvider modal={internalModalItem}>
         {modal ? (
           modal(modalProps, modalManager)
         ) : (
@@ -82,7 +82,11 @@ function Modals({
   return (
     <>
       {isLoading && loading && loading(modalManager)}
-      {stack.map((internalModal) => renderModal(internalModal))}
+      {stack.map((internalModal) => (
+        <Fragment key={internalModal.id}>
+          {renderModal(internalModal)}
+        </Fragment>
+      ))}
       {(isLoading || stack.length > 0) && backdrop && backdrop(modalManager)}
     </>
   );
