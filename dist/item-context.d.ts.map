@@ -1,1 +1,0 @@
-{"version":3,"file":"item-context.d.ts","sourceRoot":"","sources":["../src/item-context.tsx"],"names":[],"mappings":"AACA,OAAO,EAAE,aAAa,EAAE,MAAM,SAAS,CAAC;AAIxC,wBAAgB,QAAQ,4BAQvB;AAED,wBAAgB,cAAc,CAAC,QAAQ,EAAE,MAAM,OAAO,QAMrD;AAED,wBAAgB,iBAAiB,CAAC,EAChC,KAAK,EACL,QAAQ,GACT,EAAE;IACD,KAAK,EAAE,aAAa,CAAC;IACrB,QAAQ,EAAE,KAAK,CAAC,SAAS,CAAC;CAC3B,2CAMA"}

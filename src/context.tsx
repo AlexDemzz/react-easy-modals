@@ -1,13 +1,13 @@
 import { createContext, Fragment, ReactNode, useContext } from "react";
-import { ModalItemProvider } from "./item-context";
+import { ModalItemProvider } from "./item-context.js";
 import {
   InternalModalInstance,
   InternalModalInstanceItem,
   ModalManager,
   ModalProps,
   ModalProviderProps,
-} from "./types";
-import { useModalManager } from "./use-modal-manager";
+} from "./types.js";
+import { useModalManager } from "./use-modal-manager.js";
 
 const ModalContext = createContext<ModalManager | null>(null);
 

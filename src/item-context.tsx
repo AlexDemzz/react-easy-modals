@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect } from "react";
-import { InternalModalInstanceItem, ModalProps } from "./types";
+import { InternalModalInstanceItem, ModalProps } from "./types.js";
 
 const ModalItemContext = createContext<InternalModalInstanceItem | null>(null);
 

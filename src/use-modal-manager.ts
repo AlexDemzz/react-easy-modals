@@ -7,7 +7,7 @@ import {
   ModalManager,
   ModalOptions,
   ModalProps,
-} from "./types";
+} from "./types.js";
 
 export function useModalManager(): ModalManager {
   const [stack, setStack] = useState<InternalModalInstance[]>([]);
