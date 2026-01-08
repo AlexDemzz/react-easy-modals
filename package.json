@@ -1,6 +1,6 @@
 {
   "name": "react-easy-modals",
-  "version": "1.4.21",
+  "version": "1.5.0",
   "type": "module",
   "description": "A simple, flexible, headless, zero-dependency modal stack manager for React.",
   "homepage": "https://react-easy-modals-docs.vercel.app/",
