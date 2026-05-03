@@ -17,6 +17,8 @@ export function useModalManager(): ModalManager {
   const beforeCloseCallbacks = useRef<
     Map<string, (value?: unknown) => boolean>
   >(new Map());
+  const stackRef = useRef(stack);
+  stackRef.current = stack;
 
   const generateId = useCallback(() => {
     return `modal-${nextId.current++}`;
@@ -100,31 +102,47 @@ export function useModalManager(): ModalManager {
     return callback ? callback(value) : true;
   }, []);
 
+  const findModalById = useCallback(
+    (
+      modals: InternalModalInstance[],
+      id: string
+    ): InternalModalInstance | null => {
+      for (const m of modals) {
+        if (m.id === id) return m;
+        if (m.nested) {
+          const found = findModalById([m.nested], id);
+          if (found) return found;
+        }
+      }
+      return null;
+    },
+    []
+  );
+
+  // Close deepest nested first so promises resolve bottom-up
+  const closeChain = useCallback(
+    (m: InternalModalInstance, options?: CloseOptions): boolean => {
+      let didClose = false;
+      if (m.nested) didClose = closeChain(m.nested, options) || didClose;
+      if (options?.force || canClose(m.id)) {
+        m.close(undefined, options);
+        didClose = true;
+      }
+      return didClose;
+    },
+    [canClose]
+  );
+
   const closeById = useCallback(
     (id: string, options?: CloseOptions): boolean => {
-      let wasClosed = false;
-
-      setStack((prev) => {
-        const modal = prev.find((m) => m.id === id);
-        if (!modal) {
-          console.error(`Modal with ID "${id}" not found, and cant be closed`);
-          return prev;
-        }
-
-        if (!options?.force && !canClose(id)) {
-          return prev;
-        }
-
-        wasClosed = true;
-        beforeCloseCallbacks.current.delete(id);
-        const newStack = prev.filter((m) => m.id !== id);
-        setAction("pop");
-        return updateModalStack(newStack);
-      });
-
-      return wasClosed;
+      const modal = findModalById(stackRef.current, id);
+      if (!modal) {
+        console.error(`Modal with ID "${id}" not found, and cant be closed`);
+        return false;
+      }
+      return closeChain(modal, options);
     },
-    [updateModalStack, canClose]
+    [findModalById, closeChain]
   );
 
   const closeCurrent = useCallback(
@@ -226,66 +244,28 @@ export function useModalManager(): ModalManager {
           `amount must be a number greater than 0. Received ${n}`
         );
       }
+      const current = stackRef.current;
       let didClose = false;
-
-      setStack((prev) => {
-        let closedCount = 0;
-        let newStack = [...prev];
-
-        for (let i = prev.length - 1; i >= 0 && closedCount < n; i--) {
-          const modal = prev[i];
-          if (options?.force || canClose(modal.id)) {
-            beforeCloseCallbacks.current.delete(modal.id);
-            newStack = newStack.filter((m) => m.id !== modal.id);
-            closedCount += 1;
-          }
-        }
-
-        if (closedCount > 0) {
-          didClose = true;
-          setAction("pop");
-        }
-
-        return updateModalStack(newStack);
-      });
-
+      for (let i = current.length - 1, count = 0; i >= 0 && count < n; i--, count++) {
+        if (closeChain(current[i], options)) didClose = true;
+      }
       return didClose;
     },
-    [updateModalStack, canClose]
+    [closeChain]
   );
 
-  const closeAll = useCallback((options?: CloseOptions): boolean => {
-    let wasAnyClosed = false;
-
-    setStack((prev) => {
-      if (prev.length === 0) return prev;
-
-      if (options?.force) {
-        wasAnyClosed = true;
-        setAction("pop");
-        beforeCloseCallbacks.current.clear();
-        return [];
+  const closeAll = useCallback(
+    (options?: CloseOptions): boolean => {
+      const current = stackRef.current;
+      if (current.length === 0) return false;
+      let didClose = false;
+      for (const m of current) {
+        if (closeChain(m, options)) didClose = true;
       }
-
-      const remainingModals: InternalModalInstance[] = [];
-      for (const modal of prev) {
-        if (canClose(modal.id)) {
-          wasAnyClosed = true;
-          beforeCloseCallbacks.current.delete(modal.id);
-        } else {
-          remainingModals.push(modal);
-        }
-      }
-
-      if (wasAnyClosed) {
-        setAction("pop");
-      }
-
-      return updateModalStack(remainingModals);
-    });
-
-    return wasAnyClosed;
-  }, [canClose, updateModalStack]);
+      return didClose;
+    },
+    [closeChain]
+  );
 
   const openNested = useCallback(
     <T = unknown, R = unknown>(

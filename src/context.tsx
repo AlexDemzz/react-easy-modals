@@ -1,10 +1,9 @@
 import { createContext, Fragment, ReactNode, useContext } from "react";
-import { ModalItemProvider } from "./item-context.js";
+import { ModalItemProvider, toModalProps } from "./item-context.js";
 import {
   InternalModalInstance,
   InternalModalInstanceItem,
   ModalManager,
-  ModalProps,
   ModalProviderProps,
 } from "./types.js";
 import { useModalManager } from "./use-modal-manager.js";
@@ -35,34 +34,40 @@ function Modals({
   const modalManager = useModals();
   const { stack, isLoading, createOpen } = modalManager;
 
-  const renderModal = (internalModal: InternalModalInstance, isNested: boolean = false): ReactNode => {
+  const renderModal = (
+    internalModal: InternalModalInstance,
+    ancestors: InternalModalInstanceItem[] = [],
+    isNested: boolean = false
+  ): ReactNode => {
     const open = createOpen(internalModal.id);
 
+    // Ancestor view exposed to descendants: nested is null since descendants
+    // shouldn't introspect their own subtree via useModalAt(...).nested
+    const ancestorView: InternalModalInstanceItem = {
+      ...internalModal,
+      nested: null,
+      open,
+      isNested,
+      ancestors,
+    };
+
     const nestedElement = internalModal.nested
-      ? renderModal(internalModal.nested, true)
+      ? renderModal(
+        internalModal.nested,
+        [...ancestors, ancestorView],
+        true
+      )
       : null;
 
     const internalModalItem: InternalModalInstanceItem = {
-      ...internalModal,
+      ...ancestorView,
       nested: nestedElement,
-      open,
-      isNested,
-    };
-
-    const modalProps: ModalProps = {
-      id: internalModalItem.id,
-      isOpen: internalModalItem.isOpen,
-      isNested: internalModalItem.isNested,
-      close: internalModalItem.close,
-      index: internalModalItem.index,
-      nested: nestedElement,
-      open,
     };
 
     return (
       <ModalItemProvider modal={internalModalItem}>
         {modal ? (
-          modal(modalProps, modalManager)
+          modal(toModalProps(internalModalItem), modalManager)
         ) : (
           <internalModalItem.component
             {...internalModalItem.props}

@@ -85,11 +85,12 @@ import Modal from "./Modal";
 function Page() {
   const modals = useModals();
 
-  const handleClick = () => {
-    modals.open(Modal, {
+  async function handleClick() {
+    const result = await modals.open(Modal, {
       title: "Alert",
       message: "This is an alert",
     });
+    console.log(result);
   };
 
   return <button onClick={handleClick}>Open Modal</button>;

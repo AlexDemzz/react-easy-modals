@@ -52,7 +52,10 @@ export interface InternalModalInstanceItem<T = any, ReturnValue = any>
   component: ModalComponent<T, ReturnValue>;
   props?: Omit<T, keyof ModalProps<ReturnValue>>;
   onBeforeClose: (callback: (value?: ReturnValue) => boolean) => void;
+  ancestors: InternalModalInstanceItem[];
 }
+
+export type ModalLevel = number | "root" | { id: string };
 
 export interface ModalManager {
   open: {
